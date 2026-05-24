@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kampala School & Academy Management Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .tab-active { background-color: #1e293b; color: #fff; }
+  .tab-inactive { background-color: #f1f5f9; color: #334155; }
+  .tab-inactive:hover { background-color: #e2e8f0; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  table { border-collapse: collapse; }
+
+  @media print {
+    body * { visibility: hidden; }
+    #printArea, #printArea * { visibility: visible; }
+    #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 24px; }
+    .no-print { display: none !important; }
+    .page-break { page-break-after: always; }
+  }
+</style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+<header class="bg-slate-900 text-white shadow-md no-print">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-lg">KS</div>
+      <div>
+        <h1 class="text-lg sm:text-xl font-bold leading-tight">Kampala School & Academy Portal</h1>
+        <p class="text-xs text-slate-300">Offline-first school, academics, sports & academy management</p>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button id="exportBtn" class="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium px-3 py-2 rounded-md transition">⬇ Export Ledger</button>
+      <label class="bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium px-3 py-2 rounded-md cursor-pointer transition">
+        ⬆ Import Ledger
+        <input id="importInput" type="file" accept="application/json" class="hidden" />
+      </label>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 no-print">
+
+  <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+    <div class="bg-white rounded-xl shadow p-4 border-l-4 border-slate-700">
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Students</p>
+      <p id="metricStudents" class="text-2xl font-bold text-slate-800 mt-2">0</p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4 border-l-4 border-emerald-500">
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Fees Collected</p>
+      <p id="metricCollected" class="text-2xl font-bold text-emerald-600 mt-2">UGX 0</p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4 border-l-4 border-rose-500">
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Outstanding</p>
+      <p id="metricOutstanding" class="text-2xl font-bold text-rose-600 mt-2">UGX 0</p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4 border-l-4 border-indigo-500">
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Programs</p>
+      <p id="metricPrograms" class="text-2xl font-bold text-indigo-600 mt-2">0</p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4 border-l-4 border-amber-500">
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Bursary Eligible</p>
+      <p id="metricBursary" class="text-2xl font-bold text-amber-600 mt-2">0</p>
+    </div>
+  </section>
+
+  <nav class="flex flex-wrap gap-2 mb-6">
+    <button data-tab="overview"   class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition tab-active">Dashboard</button>
+    <button data-tab="directory"  class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition tab-inactive">Student Directory</button>
+    <button data-tab="academics"  class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition tab-inactive">Academic Performance</button>
+    <button data-tab="payments"   class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition tab-inactive">Payment Logs</button>
+    <button data-tab="sports"     class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition tab-inactive">Sports & Programs</button>
+    <button data-tab="attendance" class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition tab-inactive">Attendance</button>
+    <button data-tab="bursary"    class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition tab-inactive">Bursaries</button>
+    <button data-tab="conduct"    class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition tab-inactive">Discipline & Conduct</button>
+    <button data-tab="reports"    class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition tab-inactive">Statistical Reports</button>
+    <button data-tab="admin"      class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition tab-inactive">Administration</button>
+  </nav>
+
+  <section id="panel-overview" class="panel active space-y-4">
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-bold text-slate-800 mb-3">Welcome, Administrator</h2>
+      <p class="text-sm text-slate-600 mb-4">
+        This portal runs entirely on this device — no internet required after first load. Your data is stored privately
+        in your browser. Always use <strong>Export Ledger</strong> regularly to keep an offline backup.
+      </p>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-50 rounded-lg p-4">
+          <p class="text-xs uppercase font-semibold text-slate-500">Cleared Students</p>
+          <p id="metricCleared" class="text-2xl font-bold text-emerald-600 mt-1">0</p>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-4">
+          <p class="text-xs uppercase font-semibold text-slate-500">With Balance</p>
+          <p id="metricWithBalance" class="text-2xl font-bold text-rose-600 mt-1">0</p>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-4">
+          <p class="text-xs uppercase font-semibold text-slate-500">Athletes Tracked</p>
+          <p id="metricAthletes" class="text-2xl font-bold text-indigo-600 mt-1">0</p>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-4">
+          <p class="text-xs uppercase font-semibold text-slate-500">Avg Attendance</p>
+          <p id="metricAttendance" class="text-2xl font-bold text-slate-800 mt-1">0%</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-md font-bold text-slate-800 mb-3">Students by Level</h3>
+        <div id="levelBreakdown" class="space-y-2 text-sm"></div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-md font-bold text-slate-800 mb-3">Recent Payments</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+              <tr>
+                <th class="text-left p-2">Date</th>
+                <th class="text-left p-2">Student</th>
+                <th class="text-right p-2">Amount (UGX)</th>
+              </tr>
+            </thead>
+            <tbody id="recentPaymentsBody" class="divide-y divide-slate-100">
+              <tr><td colspan="3" class="p-3 text-center text-slate-400">No payments yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-directory" class="panel">
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h2 class="text-lg font-bold text-slate-800">Student Directory</h2>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <button id="bulkSmsBtn" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-3 py-2 rounded-md transition" title="Open SMS reminders for every student with an outstanding balance">📲 Bulk Fee Reminders</button>
+          <select id="levelFilter" class="border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <option value="">All Levels</option>
+            <option value="Pre-Primary">Pre-Primary</option>
+            <option value="Primary">Primary (P.1–P.7)</option>
+            <option value="O Level">O Level (S.1–S.4)</option>
+            <option value="A Level">A Level (S.5–S.6)</option>
+            <option value="Other">Other</option>
+          </select>
+          <input id="searchInput" type="text" placeholder="Search by name or class..."
+            class="border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+            <tr>
+              <th class="text-left p-2">ID</th>
+              <th class="text-left p-2">Name</th>
+              <th class="text-left p-2">Class</th>
+              <th class="text-left p-2">Level</th>
+              <th class="text-left p-2">Guardian</th>
+              <th class="text-left p-2">Sport</th>
+              <th class="text-right p-2">Fees</th>
+              <th class="text-right p-2">Paid</th>
+              <th class="text-center p-2">Status</th>
+              <th class="text-center p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody" class="divide-y divide-slate-100">
+            <tr><td colspan="10" class="p-4 text-center text-slate-400">No students registered yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-academics" class="panel space-y-6">
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-bold text-slate-800 mb-4">Record Subject Score</h2>
+      <p class="text-xs text-slate-500 mb-3">Uganda grading: O Level uses D1–F9 (auto from %), A Level uses A–F (auto from %).</p>
+      <form id="academicForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+        <div class="lg:col-span-2">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Student</label>
+          <select name="studentId" id="academicStudentSelect" required class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="">-- choose student --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Term</label>
+          <select name="term" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option>Term 1</option><option>Term 2</option><option>Term 3</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Subject</label>
+          <input name="subject" required type="text" list="subjectList" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" placeholder="e.g. Mathematics" />
+          <datalist id="subjectList"></datalist>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Score (%)</label>
+          <input name="score" required type="number" min="0" max="100" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
+        <div>
+          <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 rounded-md transition">Add Score</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h2 class="text-lg font-bold text-slate-800">Academic Performance Summary</h2>
+        <select id="academicLevelFilter" class="border border-slate-300 rounded-md px-3 py-2 text-sm">
+          <option value="">All Levels</option>
+          <option value="Primary">Primary</option>
+          <option value="O Level">O Level</option>
+          <option value="A Level">A Level</option>
+        </select>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+            <tr>
+              <th class="text-left p-2">Student</th>
+              <th class="text-left p-2">Class</th>
+              <th class="text-left p-2">Level</th>
+              <th class="text-center p-2">Subjects</th>
+              <th class="text-center p-2">Average %</th>
+              <th class="text-center p-2">Aggregate / Division</th>
+              <th class="text-center p-2">Action</th>
+            </tr>
+          </thead>
+          <tbody id="academicTableBody" class="divide-y divide-slate-100">
+            <tr><td colspan="7" class="p-4 text-center text-slate-400">No academic records yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-payments" class="panel">
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-bold text-slate-800 mb-4">Payment Logs</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+            <tr>
+              <th class="text-left p-2">Date</th>
+              <th class="text-left p-2">Student ID</th>
+              <th class="text-left p-2">Student Name</th>
+              <th class="text-left p-2">Class</th>
+              <th class="text-right p-2">Amount (UGX)</th>
+            </tr>
+          </thead>
+          <tbody id="paymentsTableBody" class="divide-y divide-slate-100">
+            <tr><td colspan="5" class="p-4 text-center text-slate-400">No payments recorded yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-sports" class="panel space-y-6">
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-bold text-slate-800 mb-1">Active Programs</h2>
+      <p class="text-xs text-slate-500 mb-4">Training programs offered by the academy — each lists schedule, coach, requirements & enrolment.</p>
+      <div id="programsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="text-sm text-slate-400 col-span-full text-center py-6">No programs yet. Add one in <strong>Administration</strong>.</div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Performance & Activity Log</h2>
+          <p class="text-xs text-slate-500">Latest skill evaluations and coaching notes per athlete</p>
+        </div>
+        <select id="sportFilter" class="w-full sm:w-56 border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <option value="">All Sports</option>
+        </select>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+            <tr>
+              <th class="text-left p-2">Student</th>
+              <th class="text-left p-2">Class</th>
+              <th class="text-left p-2">Sport</th>
+              <th class="text-center p-2">Skill Level</th>
+              <th class="text-left p-2">Latest Evaluation</th>
+              <th class="text-center p-2">Notes</th>
+            </tr>
+          </thead>
+          <tbody id="performanceTableBody" class="divide-y divide-slate-100">
+            <tr><td colspan="6" class="p-4 text-center text-slate-400">No athletes tracked yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-attendance" class="panel space-y-6">
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-bold text-slate-800 mb-4">Mark Session Attendance</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Program</label>
+          <select id="attendanceProgram" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">-- choose program --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Session Date</label>
+          <input id="attendanceDate" type="date" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div class="flex items-end">
+          <button id="saveAttendanceBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-md transition">Save Session</button>
+        </div>
+      </div>
+      <div id="attendanceRoster" class="border border-slate-200 rounded-lg divide-y divide-slate-100 max-h-96 overflow-y-auto">
+        <p class="text-sm text-slate-400 p-4 text-center">Select a program to load enrolled athletes.</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-bold text-slate-800 mb-4">Athlete Attendance Rates</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+            <tr>
+              <th class="text-left p-2">Student</th>
+              <th class="text-left p-2">Sport</th>
+              <th class="text-center p-2">Sessions</th>
+              <th class="text-center p-2">Present</th>
+              <th class="text-center p-2">Attendance Rate</th>
+            </tr>
+          </thead>
+          <tbody id="attendanceTableBody" class="divide-y divide-slate-100">
+            <tr><td colspan="5" class="p-4 text-center text-slate-400">No sessions recorded yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-bursary" class="panel space-y-6">
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-bold text-slate-800 mb-2">Sports Bursary Eligibility</h2>
+      <p class="text-sm text-slate-600 mb-4">
+        Auto-evaluated criteria: <strong>Skill Level ≥ Advanced</strong>, <strong>Attendance ≥ 75%</strong>,
+        and <strong>≥ 3 coaching evaluations on file</strong>. Use <em>Award Bursary %</em> to set tuition discount.
+      </p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+            <tr>
+              <th class="text-left p-2">Student</th>
+              <th class="text-left p-2">Class · Level</th>
+              <th class="text-left p-2">Sport · Skill</th>
+              <th class="text-center p-2">Attendance</th>
+              <th class="text-center p-2">Evaluations</th>
+              <th class="text-center p-2">Eligibility Score</th>
+              <th class="text-center p-2">Awarded</th>
+              <th class="text-center p-2">Action</th>
+            </tr>
+          </thead>
+          <tbody id="bursaryTableBody" class="divide-y divide-slate-100">
+            <tr><td colspan="8" class="p-4 text-center text-slate-400">No athletes registered yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-conduct" class="panel space-y-6">
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-bold text-slate-800 mb-1">Log Conduct Entry</h2>
+      <p class="text-xs text-slate-500 mb-4">Record commendations, warnings or disciplinary actions. Severe entries can auto-notify the guardian via SMS.</p>
+      <form id="conductForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+        <div class="lg:col-span-2">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Student</label>
+          <select name="studentId" id="conductStudentSelect" required class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+            <option value="">-- choose student --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Type</label>
+          <select name="type" required class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+            <option value="Commendation">Commendation</option>
+            <option value="Verbal Warning">Verbal Warning</option>
+            <option value="Written Warning">Written Warning</option>
+            <option value="Detention">Detention</option>
+            <option value="Suspension">Suspension</option>
+            <option value="Manual Work">Manual Work</option>
+            <option value="Counselling">Counselling</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Severity</label>
+          <select name="severity" required class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+            <option value="Positive">Positive</option>
+            <option value="Minor">Minor</option>
+            <option value="Major">Major</option>
+            <option value="Severe">Severe</option>
+          </select>
+        </div>
+        <div class="lg:col-span-2">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Reported By</label>
+          <input name="reportedBy" type="text" required class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. Mr. Kato (Class Teacher)" />
+        </div>
+        <div class="lg:col-span-6">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Description / Action Taken</label>
+          <textarea name="description" required rows="2" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="e.g. Helped junior students during assembly."></textarea>
+        </div>
+        <div class="lg:col-span-6 flex flex-col sm:flex-row gap-2">
+          <label class="flex items-center gap-2 text-xs text-slate-600">
+            <input type="checkbox" name="notifyGuardian" class="h-4 w-4 accent-rose-500" />
+            Prepare SMS to guardian after saving
+          </label>
+          <button type="submit" class="sm:ml-auto bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium px-4 py-2 rounded-md transition">Save Conduct Entry</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h2 class="text-lg font-bold text-slate-800">Conduct Log</h2>
+        <select id="conductFilter" class="border border-slate-300 rounded-md px-3 py-2 text-sm">
+          <option value="">All Types</option>
+          <option value="Positive">Positive only</option>
+          <option value="Minor">Minor only</option>
+          <option value="Major">Major only</option>
+          <option value="Severe">Severe only</option>
+        </select>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+            <tr>
+              <th class="text-left p-2">Date</th>
+              <th class="text-left p-2">Student</th>
+              <th class="text-left p-2">Class</th>
+              <th class="text-left p-2">Type</th>
+              <th class="text-center p-2">Severity</th>
+              <th class="text-left p-2">Description</th>
+              <th class="text-left p-2">Reported By</th>
+              <th class="text-center p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="conductTableBody" class="divide-y divide-slate-100">
+            <tr><td colspan="8" class="p-4 text-center text-slate-400">No conduct entries yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  <!-- ===== CHUNK 2 of 4 — START — paste directly after Chunk 1 ===== -->
+  <section id="panel-reports" class="panel space-y-6">
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-bold text-slate-800 mb-4">Enrollment by Level (Uganda Curriculum)</h2>
+      <div id="levelStats" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-bold text-slate-800 mb-4">Class-by-Class Breakdown</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+            <tr>
+              <th class="text-left p-2">Class</th>
+              <th class="text-left p-2">Level</th>
+              <th class="text-center p-2">Students</th>
+              <th class="text-center p-2">Academic Avg %</th>
+              <th class="text-center p-2">Cleared Fees</th>
+              <th class="text-center p-2">Outstanding (UGX)</th>
+              <th class="text-center p-2">Athletes</th>
+            </tr>
+          </thead>
+          <tbody id="classStatsBody" class="divide-y divide-slate-100">
+            <tr><td colspan="7" class="p-4 text-center text-slate-400">No data yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-md font-bold text-slate-800 mb-3">Sports Participation</h3>
+        <div id="sportStats" class="space-y-2 text-sm"></div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-md font-bold text-slate-800 mb-3">Financial Summary</h3>
+        <div id="financeStats" class="space-y-2 text-sm"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-admin" class="panel">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+      <div class="bg-white rounded-xl shadow p-5">
+        <h2 class="text-lg font-bold text-slate-800 mb-4">Register New Student</h2>
+        <form id="registerForm" class="space-y-3">
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Admission No. <span class="text-slate-400 font-normal">(optional)</span></label>
+              <input name="admissionNo" type="text" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g. KSA/2025/0123" />
+              <p class="text-[10px] text-slate-400 mt-1">Leave blank to auto-generate</p>
+            </div>
+            <div class="col-span-2">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
+              <input name="name" required type="text" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g. Nakato Sarah" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Class</label>
+              <select name="class" id="classSelect" required class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="">-- select --</option>
+                <optgroup label="Pre-Primary">
+                  <option>Baby Class</option><option>Middle Class</option><option>Top Class</option>
+                </optgroup>
+                <optgroup label="Primary">
+                  <option>P.1</option><option>P.2</option><option>P.3</option><option>P.4</option>
+                  <option>P.5</option><option>P.6</option><option>P.7</option>
+                </optgroup>
+                <optgroup label="O Level">
+                  <option>S.1</option><option>S.2</option><option>S.3</option><option>S.4</option>
+                </optgroup>
+                <optgroup label="A Level">
+                  <option>S.5</option><option>S.6</option>
+                </optgroup>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Subjects / Combination <span class="text-slate-400 font-normal">(comma-separated)</span></label>
+              <input name="combination" id="combinationInput" type="text" list="combinationList" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g. PCM  or  Math, English, Science..." />
+              <p id="combinationHint" class="text-[10px] text-slate-400 mt-1">Primary: list all subjects. O Level: 8–10 subjects. A Level: combination code or full list.</p>
+              <datalist id="combinationList">
+                <option value="PCM">A-Level: Physics/Chemistry/Math</option>
+                <option value="PCB">A-Level: Physics/Chemistry/Biology</option>
+                <option value="PEM">A-Level: Physics/Economics/Math</option>
+                <option value="MEG">A-Level: Math/Economics/Geography</option>
+                <option value="HEG">A-Level: History/Economics/Geography</option>
+                <option value="HEL">A-Level: History/Economics/Literature</option>
+                <option value="HGL">A-Level: History/Geography/Literature</option>
+                <option value="BCM">A-Level: Biology/Chemistry/Math</option>
+                <option value="Math, English, Science, SST, Religious Education">Primary: 5 core subjects</option>
+                <option value="Math, English, Science, SST, Religious Education, Luganda, Kiswahili">Primary: 7 subjects</option>
+                <option value="Math, English, Physics, Chemistry, Biology, Geography, History, CRE">O-Level: Science-leaning (8)</option>
+                <option value="Math, English, Physics, Chemistry, Biology, Geography, History, CRE, Literature, Commerce">O-Level: Broad (10)</option>
+                <option value="Math, English, Physics, Chemistry, Biology, Geography, History, CRE, Agriculture, Entrepreneurship">O-Level: with Agric & Entrepreneurship</option>
+              </datalist>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Guardian Contact</label>
+              <input name="guardian" required type="tel" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="0772 123 456" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Termly Tuition (UGX)</label>
+              <input name="fee" required type="number" min="0" step="1000" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="450000" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Primary Sport</label>
+              <select name="sport" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="">— None —</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Initial Skill Level</label>
+              <select name="skillLevel" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="">— N/A —</option>
+                <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Elite</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-2 rounded-md transition">Register Student</button>
+        </form>
+      </div>
+      <div class="bg-white rounded-xl shadow p-5">
+        <h2 class="text-lg font-bold text-slate-800 mb-4">Record Payment</h2>
+        <form id="paymentForm" class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Select Student</label>
+            <select name="studentId" id="studentSelect" required class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="">-- choose student --</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Amount Paid (UGX)
+<!-- ===== CHUNK 3 of 4 — START — paste directly after Chunk 2 ===== -->
+function registerStudent(f) {
+  let id = (f.admissionNo || '').trim();
+  if (id) {
+    if (state.students.some(s => s.id.toLowerCase() === id.toLowerCase())) return toast('Admission No. "' + id + '" is already in use', 'error');
+  } else { id = 'S' + uid().toUpperCase().slice(0, 6); }
+  const combination = (f.combination || '').split(',').map(s => s.trim()).filter(Boolean).join(', ');
+  state.students.push({
+    id, name: f.name.trim(), class: f.class.trim(),
+    level: classifyLevel(f.class), combination,
+    guardian: f.guardian.trim(), fee: Number(f.fee), paid: 0,
+    sport: (f.sport || '').trim(), skillLevel: (f.skillLevel || '').trim(),
+    performanceNotes: [], academics: [], bursaryPct: 0, createdAt: todayISO()
+  });
+  saveState(); renderAll();
+  toast('Student registered: ' + f.name + ' (' + id + ')', 'success');
+}
+
+function recordPayment(studentId, amount) {
+  const student = state.students.find(s => s.id === studentId);
+  if (!student) return toast('Student not found', 'error');
+  amount = Number(amount);
+  if (!amount || amount <= 0) return toast('Enter a valid amount', 'error');
+  student.paid += amount;
+  state.payments.push({ id: 'P' + uid().toUpperCase().slice(0, 6), studentId, amount, date: todayISO() });
+  saveState(); renderAll();
+  toast('Payment of ' + fmtUGX(amount) + ' recorded', 'success');
+}
+
+function deleteStudent(id) {
+  if (!confirm('Delete this student and all related records?')) return;
+  state.students = state.students.filter(s => s.id !== id);
+  state.payments = state.payments.filter(p => p.studentId !== id);
+  state.attendance.forEach(a => a.records = a.records.filter(r => r.studentId !== id));
+  saveState(); renderAll();
+  toast('Student removed', 'success');
+}
+
+function resetAll() {
+  if (!confirm('This will erase ALL data. Continue?')) return;
+  if (!confirm('Are you absolutely sure? This cannot be undone.')) return;
+  state = { version: SCHEMA_VERSION, students: [], payments: [], attendance: [], conduct: [], programs: DEFAULT_PROGRAMS.map(p => ({ ...p })) };
+  saveState(); renderAll();
+  toast('All data cleared', 'success');
+}
+
+function addConduct(f) {
+  const student = state.students.find(s => s.id === f.studentId);
+  if (!student) return toast('Student not found', 'error');
+  const entry = { id: 'CON' + uid().toUpperCase().slice(0, 5), studentId: f.studentId, date: todayISO(), type: f.type, severity: f.severity, description: (f.description || '').trim(), reportedBy: (f.reportedBy || '').trim() };
+  state.conduct.push(entry);
+  saveState(); renderAll();
+  toast('Conduct entry saved for ' + student.name, 'success');
+  if (f.notifyGuardian) smsConduct(entry.id);
+}
+
+function deleteConduct(id) {
+  if (!confirm('Delete this conduct entry?')) return;
+  state.conduct = state.conduct.filter(c => c.id !== id);
+  saveState(); renderAll();
+  toast('Conduct entry removed', 'success');
+}
+
+function normalizePhone(raw) {
+  if (!raw) return '';
+  const d = String(raw).replace(/[^0-9+]/g, '');
+  if (d.startsWith('+')) return d;
+  if (d.startsWith('256')) return '+' + d;
+  if (d.startsWith('0') && d.length === 10) return '+256' + d.slice(1);
+  return d;
+}
+
+function smsBalance(studentId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  const phone = normalizePhone(s.guardian);
+  if (!phone) return toast('No guardian phone on file', 'error');
+  const fee = effectiveFee(s);
+  const bal = Math.max(0, fee - s.paid);
+  const body = bal > 0
+    ? `Dear Parent/Guardian of ${s.name} (${s.class}), this is a reminder that the outstanding school fees balance is ${fmtUGX(bal)} out of ${fmtUGX(fee)}. Kindly clear at your earliest convenience. Thank you. - Kampala School & Academy`
+    : `Dear Parent/Guardian of ${s.name} (${s.class}), thank you for clearing the school fees of ${fmtUGX(fee)} for this term. - Kampala School & Academy`;
+  window.location.href = 'sms:' + phone + '?body=' + encodeURIComponent(body);
+  toast('Opening SMS for ' + s.name, 'success');
+}
+
+function smsConduct(conductId) {
+  const c = state.conduct.find(x => x.id === conductId);
+  if (!c) return;
+  const s = state.students.find(x => x.id === c.studentId);
+  if (!s) return;
+  const phone = normalizePhone(s.guardian);
+  if (!phone) return toast('No guardian phone on file', 'error');
+  const opener = c.severity === 'Positive'
+    ? `Dear Parent/Guardian of ${s.name} (${s.class}), we are pleased to share a commendation:`
+    : `Dear Parent/Guardian of ${s.name} (${s.class}), please note a ${c.severity.toLowerCase()} conduct incident on ${c.date}:`;
+  const body = `${opener} "${c.description}" Reported by ${c.reportedBy || 'school staff'}. - Kampala School & Academy`;
+  window.location.href = 'sms:' + phone + '?body=' + encodeURIComponent(body);
+  toast('Opening SMS for ' + s.name, 'success');
+}
+
+function openBulkSms() {
+  const debtors = state.students.map(s => ({ s, bal: Math.max(0, effectiveFee(s) - s.paid) })).filter(x => x.bal > 0).sort((a, b) => b.bal - a.bal);
+  document.getElementById('modalTitle').textContent = 'Bulk Fee Reminders (' + debtors.length + ')';
+  if (!debtors.length) {
+    document.getElementById('modalBody').innerHTML = '<p class="text-sm text-emerald-600 text-center py-6">🎉 All students have cleared their fees!</p>';
+  } else {
+    document.getElementById('modalBody').innerHTML = `<p class="text-xs text-slate-500 mb-3">Tap 📲 SMS on each row to open your device's messaging app with a pre-filled reminder. Total outstanding: <strong class="text-rose-700">${fmtUGX(debtors.reduce((a,x) => a + x.bal, 0))}</strong></p><div class="divide-y divide-slate-100 border border-slate-200 rounded-lg max-h-96 overflow-y-auto">${debtors.map(({ s, bal }) => `<div class="flex items-center justify-between p-3 hover:bg-slate-50"><div><div class="font-medium text-slate-800 text-sm">${escapeHtml(s.name)}</div><div class="text-xs text-slate-500">${escapeHtml(s.class)} · ${escapeHtml(s.guardian)}</div><div class="text-xs text-rose-700 font-semibold mt-0.5">Balance: ${fmtUGX(bal)}</div></div><button onclick="smsBalance('${s.id}')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md">📲 SMS</button></div>`).join('')}</div>`;
+  }
+  showModal();
+}
+
+function addProgram(f) {
+  const requirements = (f.requirements || '').split('\n').map(s => s.trim()).filter(Boolean);
+  state.programs.push({ id: 'PRG' + uid().toUpperCase().slice(0, 5), name: f.name.trim(), sport: f.sport.trim(), coach: f.coach.trim(), days: Array.isArray(f.days) ? f.days : [], requirements });
+  saveState(); renderAll();
+  toast('Program added: ' + f.name, 'success');
+}
+function deleteProgram(id) {
+  if (!confirm('Remove this program?')) return;
+  state.programs = state.programs.filter(p => p.id !== id);
+  state.attendance = state.attendance.filter(a => a.programId !== id);
+  saveState(); renderAll();
+  toast('Program removed', 'success');
+}
+
+function logPerformance(studentId, skillLevel, note) {
+  const student = state.students.find(s => s.id === studentId);
+  if (!student) return toast('Student not found', 'error');
+  if (!note || !note.trim()) return toast('Please add a note', 'error');
+  student.skillLevel = skillLevel;
+  if (!Array.isArray(student.performanceNotes)) student.performanceNotes = [];
+  student.performanceNotes.push({ date: todayISO(), skillLevel, note: note.trim() });
+  if (!student.sport) student.sport = 'General';
+  saveState(); renderAll();
+  toast('Performance note saved for ' + student.name, 'success');
+}
+
+function addAcademicScore(f) {
+  const student = state.students.find(s => s.id === f.studentId);
+  if (!student) return toast('Student not found', 'error');
+  const score = Number(f.score);
+  if (isNaN(score) || score < 0 || score > 100) return toast('Score must be 0–100', 'error');
+  const g = gradeFor(student.level, score);
+  student.academics.push({ id: 'AC' + uid().toUpperCase().slice(0, 5), term: f.term, subject: f.subject.trim(), score, grade: g.grade, points: g.points, date: todayISO() });
+  saveState(); renderAll();
+  toast('Score saved: ' + f.subject + ' ' + score + '% (' + g.grade + ')', 'success');
+}
+
+function saveAttendance(programId, date, records) {
+  if (!programId || !date) return toast('Choose a program and date', 'error');
+  state.attendance = state.attendance.filter(a => !(a.programId === programId && a.date === date));
+  state.attendance.push({ id: 'ATT' + uid().toUpperCase().slice(0, 5), programId, date, records });
+  saveState(); renderAll();
+  toast('Attendance saved for ' + date, 'success');
+}
+
+function setBursary(studentId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  const input = prompt(`Set bursary discount % for ${s.name} (0–100). Current: ${s.bursaryPct || 0}%`, s.bursaryPct || 0);
+  if (input === null) return;
+  const pct = Math.max(0, Math.min(100, Number(input) || 0));
+  s.bursaryPct = pct;
+  saveState(); renderAll();
+  toast('Bursary set to ' + pct + '% for ' + s.name, 'success');
+}
+
+function exportLedger() {
+  const blob = new Blob([JSON.stringify(state)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'school-ledger-' + todayISO() + '.json'; a.click();
+  URL.revokeObjectURL(url);
+  toast('Ledger exported', 'success');
+}
+function importLedger(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data || !Array.isArray(data.students)) return toast('Invalid ledger file', 'error');
+      if (!confirm('Replace current data with imported ledger?')) return;
+      state = migrate(data); saveState(); renderAll();
+      toast('Ledger imported successfully', 'success');
+    } catch (err) { toast('Failed to parse file', 'error'); }
+  };
+  reader.readAsText(file);
+}
+
+function updateDashboardMetrics() {
+  const totalStudents = state.students.length;
+  const totalCollected = state.students.reduce((s, x) => s + x.paid, 0);
+  const totalOutstanding = state.students.reduce((s, x) => s + Math.max(0, effectiveFee(x) - x.paid), 0);
+  const cleared = state.students.filter(x => x.paid >= effectiveFee(x)).length;
+  const withBalance = totalStudents - cleared;
+  const athletes = state.students.filter(s => s.sport && s.sport.trim()).length;
+  const bursaryCount = state.students.filter(bursaryEligible).length;
+  const attRates = state.students.filter(s => s.sport).map(s => studentAttendance(s.id).rate);
+  const avgAtt = attRates.length ? Math.round(attRates.reduce((a,b)=>a+b,0) / attRates.length) : 0;
+
+  document.getElementById('metricStudents').textContent = totalStudents;
+  document.getElementById('metricCollected').textContent = fmtUGX(totalCollected);
+  document.getElementById('metricOutstanding').textContent = fmtUGX(totalOutstanding);
+  document.getElementById('metricPrograms').textContent = state.programs.length;
+  document.getElementById('metricBursary').textContent = bursaryCount;
+  document.getElementById('metricCleared').textContent = cleared;
+  document.getElementById('metricWithBalance').textContent = withBalance;
+  document.getElementById('metricAthletes').textContent = athletes;
+  document.getElementById('metricAttendance').textContent = avgAtt + '%';
+
+  const levels = ['Pre-Primary','Primary','O Level','A Level','Other'];
+  const counts = levels.map(l => state.students.filter(s => s.level === l).length);
+  const max = Math.max(1, ...counts);
+  document.getElementById('levelBreakdown').innerHTML = levels.map((l, i) => `<div><div class="flex justify-between text-xs mb-1"><span class="font-semibold text-slate-600">${l}</span><span class="text-slate-500">${counts[i]} student${counts[i]===1?'':'s'}</span></div><div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-emerald-500" style="width:${(counts[i]/max)*100}%"></div></div></div>`).join('');
+}
+
+function renderStudentTable() {
+  const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+  const levelF = document.getElementById('levelFilter').value;
+  const body = document.getElementById('studentTableBody');
+  const filtered = state.students.filter(s => (!q || s.name.toLowerCase().includes(q) || s.class.toLowerCase().includes(q)) && (!levelF || s.level === levelF));
+  if (!filtered.length) { body.innerHTML = '<tr><td colspan="10" class="p-4 text-center text-slate-400">No students match your filters.</td></tr>'; return; }
+  body.innerHTML = filtered.map(s => {
+    const fee = effectiveFee(s); const balance = fee - s.paid; const cleared = balance <= 0;
+    const badge = cleared ? '<span class="inline-block bg-emerald-100 text-emerald-700 text-xs font-semibold px-2 py-1 rounded-full">Cleared</span>'
+      : (s.paid > 0 ? '<span class="inline-block bg-amber-100 text-amber-700 text-xs font-semibold px-2 py-1 rounded-full">Partial (' + fmtUGX(balance) + ')</span>'
+                    : '<span class="inline-block bg-rose-100 text-rose-700 text-xs font-semibold px-2 py-1 rounded-full">Unpaid (' + fmtUGX(balance) + ')</span>');
+    const sportCell = s.sport ? `<div>${escapeHtml(s.sport)}</div><div class="mt-1">${skillBadge(s.skillLevel)}</div>` : '<span class="text-slate-400">—</span>';
+    const bursaryTag = s.bursaryPct > 0 ? `<div class="text-[10px] mt-1 text-amber-700">Bursary -${s.bursaryPct}%</div>` : '';
+    return `<tr class="hover:bg-slate-50"><td class="p-2 font-mono text-xs text-slate-500">${s.id}</td><td class="p-2 font-medium text-slate-800">${escapeHtml(s.name)}</td><td class="p-2">${escapeHtml(s.class)}${s.combination ? ' · ' + escapeHtml(s.combination) : ''}</td><td class="p-2 text-xs">${escapeHtml(s.level)}</td><td class="p-2">${escapeHtml(s.guardian)}</td><td class="p-2">${sportCell}</td><td class="p-2 text-right">${fmtUGX(fee)}${bursaryTag}</td><td class="p-2 text-right text-emerald-700 font-medium">${fmtUGX(s.paid)}</td><td class="p-2 text-center">${badge}</td><td class="p-2 text-center whitespace-nowrap"><button onclick="openReportCard('${s.id}')" class="text-sky-600 hover:text-sky-800 text-xs font-semibold mr-2">Report</button><button onclick="smsBalance('${s.id}')" class="text-amber-600 hover:text-amber-800 text-xs font-semibold mr-2">📲 SMS</button><button onclick="openNotes('${s.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold mr-2">Notes</button><button onclick="deleteStudent('${s.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">Delete</button></td></tr>`;
+  }).join('');
+}
+
+function renderPaymentsTable() {
+  const body = document.getElementById('paymentsTableBody'); const recentBody = document.getElementById('recentPaymentsBody');
+  const sorted = [...state.payments].sort((a, b) => b.id.localeCompare(a.id));
+  if (!sorted.length) { body.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">No payments recorded yet.</td></tr>'; recentBody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">No payments yet.</td></tr>'; return; }
+  body.innerHTML = sorted.map(p => { const s = state.students.find(x => x.id === p.studentId);
+    return `<tr class="hover:bg-slate-50"><td class="p-2">${p.date}</td><td class="p-2 font-mono text-xs text-slate-500">${p.studentId}</td><td class="p-2">${s ? escapeHtml(s.name) : '<em class="text-slate-400">(deleted)</em>'}</td><td class="p-2">${s ? escapeHtml(s.class) : '—'}</td><td class="p-2 text-right text-emerald-700 font-medium">${fmtUGX(p.amount)}</td></tr>`; }).join('');
+  recentBody.innerHTML = sorted.slice(0, 5).map(p => { const s = state.students.find(x => x.id === p.studentId);
+    return `<tr><td class="p-2">${p.date}</td><td class="p-2">${s ? escapeHtml(s.name) : '<em class="text-slate-400">(deleted)</em>'}</td><td class="p-2 text-right text-emerald-700 font-medium">${fmtUGX(p.amount)}</td></tr>`; }).join('');
+}
+
+function renderPrograms() {
+  const grid = document.getElementById('programsGrid');
+  if (!state.programs.length) { grid.innerHTML = '<div class="text-sm text-slate-400 col-span-full text-center py-6">No programs yet.</div>'; return; }
+  grid.innerHTML = state.programs.map(p => {
+    const enrolled = state.students.filter(s => (s.sport || '').toLowerCase() === (p.sport || '').toLowerCase()).length;
+    const days = (p.days || []).length ? (p.days || []).map(d => `<span class="inline-block bg-indigo-50 text-indigo-700 text-xs font-semibold px-2 py-0.5 rounded">${escapeHtml(d)}</span>`).join(' ') : '<span class="text-slate-400 text-xs">No schedule set</span>';
+    const reqs = (p.requirements || []).length ? `<ul class="mt-3 text-xs text-slate-600 space-y-1 list-disc list-inside">${p.requirements.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>` : '<p class="mt-3 text-xs text-slate-400">No requirements listed</p>';
+    return `<div class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition flex flex-col"><div class="flex items-start justify-between gap-2"><div><h3 class="font-bold text-slate-800">${escapeHtml(p.name)}</h3><p class="text-xs text-slate-500">${escapeHtml(p.sport)} · Coach ${escapeHtml(p.coach)}</p></div><button onclick="deleteProgram('${p.id}')" title="Remove" class="text-rose-500 hover:text-rose-700 text-xs">&times;</button></div><div class="mt-3 flex flex-wrap gap-1">${days}</div><div class="mt-3"><p class="text-[11px] uppercase font-semibold text-slate-500 tracking-wide">School Requirements</p>${reqs}</div><div class="mt-auto pt-3 flex items-center justify-between text-sm border-t border-slate-100 mt-3"><span class="text-slate-500">Enrolled</span><span class="font-bold text-indigo-600">${enrolled}</span></div></div>`;
+  }).join('');
+}
+
+function renderPerformanceTable() {
+  const filter = (document.getElementById('sportFilter').value || '').toLowerCase();
+  const body = document.getElementById('performanceTableBody');
+  const athletes = state.students.filter(s => s.sport && s.sport.trim()).filter(s => !filter || (s.sport || '').toLowerCase() === filter);
+  if (!athletes.length) { body.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">No athletes match this filter.</td></tr>'; return; }
+  body.innerHTML = athletes.map(s => {
+    const notes = s.performanceNotes || []; const latest = notes[notes.length - 1];
+    const latestText = latest ? `<div class="text-xs text-slate-500">${latest.date}</div><div class="text-sm">${escapeHtml(latest.note)}</div>` : '<span class="text-slate-400 text-sm">No evaluations yet</span>';
+    return `<tr class="hover:bg-slate-50"><td class="p-2 font-medium text-slate-800">${escapeHtml(s.name)}</td><td class="p-2">${escapeHtml(s.class)}</td><td class="p-2">${escapeHtml(s.sport)}</td><td class="p-2 text-center">${skillBadge(s.skillLevel)}</td><td class="p-2 max-w-md">${latestText}</td><td class="p-2 text-center"><button onclick="openNotes('${s.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold">View (${notes.length})</button></td></tr>`;
+  }).join('');
+}
+
+function renderAcademicTable() {
+  const levelF = document.getElementById('academicLevelFilter').value;
+  const body = document.getElementById('academicTableBody');
+  const list = state.students.filter(s => (!levelF || s.level === levelF) && (s.academics || []).length);
+  if (!list.length) { body.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">No academic records yet.</td></tr>'; return; }
+  body.innerHTML = list.map(s => {
+    const sum = studentAcademicSummary(s);
+    return `<tr class="hover:bg-slate-50"><td class="p-2 font-medium text-slate-800">${escapeHtml(s.name)}</td><td class="p-2">${escapeHtml(s.class)}${s.combination ? ' · ' + escapeHtml(s.combination) : ''}</td><td class="p-2 text-xs">${escapeHtml(s.level)}</td><td class="p-2 text-center">${sum.count}</td><td class="p-2 text-center font-semibold">${sum.avg}%</td><td class="p-2 text-center text-sky-700 font-semibold">${sum.summary}</td><td class="p-2 text-center"><button onclick="openAcademic('${s.id}')" class="text-sky-600 hover:text-sky-800 text-xs font-semibold">Details</button></td></tr>`;
+  }).join('');
+}
+
+function renderAttendanceProgramSelect() {
+  const sel = document.getElementById('attendanceProgram');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- choose program --</option>' + state.programs.map(p => `<option value="${p.id}">${escapeHtml(p.name)} (${escapeHtml(p.sport)})</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+function renderAttendanceRoster() {
+  const roster = document.getElementById('attendanceRoster');
+  const programId = document.getElementById('attendanceProgram').value;
+  const date = document.getElementById('attendanceDate').value;
+  if (!programId) { roster.innerHTML = '<p class="text-sm text-slate-400 p-4 text-center">Select a program to load enrolled athletes.</p>'; return; }
+  const program = state.programs.find(p => p.id === programId);
+  const athletes = state.students.filter(s => (s.sport || '').toLowerCase() === (program.sport || '').toLowerCase());
+  if (!athletes.length) { roster.innerHTML = '<p class="text-sm text-slate-400 p-4 text-center">No athletes enrolled for this sport.</p>'; return; }
+  const existing = state.attendance.find(a => a.programId === programId && a.date === date);
+  const presentMap = {};
+  if (existing) existing.records.forEach(r => { presentMap[r.studentId] = r.present; });
+  roster.innerHTML = athletes.map(s => {
+    const isPresent = presentMap[s.id] !== false;
+    return `<label class="flex items-center justify-between p-3 hover:bg-slate-50 cursor-pointer"><div><div class="font-medium text-slate-800 text-sm">${escapeHtml(s.name)}</div><div class="text-xs text-slate-500">${escapeHtml(s.class)} · ${escapeHtml(s.level)}</div></div><div class="flex items-center gap-2"><span class="text-xs ${isPresent ? 'text-emerald-700 font-semibold' : 'text-slate-400'}" data-label="${s.id}">${isPresent ? 'Present' : 'Absent'}</span><input type="checkbox" data-student="${s.id}" ${isPresent ? 'checked' : ''} class="att-toggle h-5 w-5 accent-emerald-500" /></div></label>`;
+  }).join('');
+  roster.querySelectorAll('.att-toggle').forEach(cb => {
+    cb.addEventListener('change', e => {
+      const id = e.target.dataset.student;
+      const label = roster.querySelector(`[data-label="${id}"]`);
+      const on = e.target.checked;
+      label.textContent = on ? 'Present' : 'Absent';
+      label.className = 'text-xs ' + (on ? 'text-emerald-700 font-semibold' : 'text-slate-400');
+    });
+  });
+}
+<!-- ===== CHUNK 4 of 4 — START — paste directly after Chunk 3 — FINAL CHUNK ===== -->
+function renderAttendanceTable() {
+  const body = document.getElementById('attendanceTableBody');
+  const athletes = state.students.filter(s => s.sport);
+  if (!athletes.length || !state.attendance.length) { body.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">No sessions recorded yet.</td></tr>'; return; }
+  body.innerHTML = athletes.map(s => {
+    const att = studentAttendance(s.id);
+    const color = att.rate >= 75 ? 'text-emerald-700' : att.rate >= 50 ? 'text-amber-700' : 'text-rose-700';
+    return `<tr class="hover:bg-slate-50"><td class="p-2 font-medium">${escapeHtml(s.name)}</td><td class="p-2">${escapeHtml(s.sport)}</td><td class="p-2 text-center">${att.total}</td><td class="p-2 text-center">${att.present}</td><td class="p-2 text-center font-semibold ${color}">${att.rate}%</td></tr>`;
+  }).join('');
+}
+
+function renderBursaryTable() {
+  const body = document.getElementById('bursaryTableBody');
+  const athletes = state.students.filter(s => s.sport);
+  if (!athletes.length) { body.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-slate-400">No athletes registered yet.</td></tr>'; return; }
+  const ranked = athletes.map(s => ({ s, score: bursaryScore(s), att: studentAttendance(s.id) })).sort((a,b) => b.score - a.score);
+  body.innerHTML = ranked.map(({ s, score, att }) => {
+    const eligible = score >= 70;
+    const badge = eligible ? '<span class="inline-block bg-emerald-100 text-emerald-700 text-xs font-semibold px-2 py-1 rounded-full">Eligible</span>' : '<span class="inline-block bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-1 rounded-full">Below threshold</span>';
+    return `<tr class="hover:bg-slate-50"><td class="p-2 font-medium">${escapeHtml(s.name)}</td><td class="p-2 text-xs">${escapeHtml(s.class)} · ${escapeHtml(s.level)}</td><td class="p-2 text-xs">${escapeHtml(s.sport)} · ${skillBadge(s.skillLevel)}</td><td class="p-2 text-center">${att.rate}% <span class="text-xs text-slate-400">(${att.present}/${att.total})</span></td><td class="p-2 text-center">${(s.performanceNotes||[]).length}</td><td class="p-2 text-center"><div class="font-bold text-lg ${eligible ? 'text-emerald-600' : 'text-slate-500'}">${score}</div>${badge}</td><td class="p-2 text-center">${s.bursaryPct > 0 ? `<span class="font-bold text-amber-600">-${s.bursaryPct}%</span>` : '<span class="text-slate-400">—</span>'}</td><td class="p-2 text-center"><button onclick="setBursary('${s.id}')" class="text-amber-600 hover:text-amber-800 text-xs font-semibold">Award %</button></td></tr>`;
+  }).join('');
+}
+
+function renderConductTable() {
+  const filter = document.getElementById('conductFilter').value;
+  const body = document.getElementById('conductTableBody');
+  const list = [...state.conduct].filter(c => !filter || c.severity === filter).sort((a, b) => (b.date + b.id).localeCompare(a.date + a.id));
+  if (!list.length) { body.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-slate-400">No conduct entries match this filter.</td></tr>'; return; }
+  const sevColor = { Positive:'bg-emerald-100 text-emerald-700', Minor:'bg-sky-100 text-sky-700', Major:'bg-amber-100 text-amber-700', Severe:'bg-rose-100 text-rose-700' };
+  body.innerHTML = list.map(c => {
+    const s = state.students.find(x => x.id === c.studentId);
+    const badge = `<span class="inline-block ${sevColor[c.severity] || 'bg-slate-100 text-slate-700'} text-xs font-semibold px-2 py-0.5 rounded-full">${escapeHtml(c.severity)}</span>`;
+    return `<tr class="hover:bg-slate-50"><td class="p-2 text-xs text-slate-500">${c.date}</td><td class="p-2 font-medium">${s ? escapeHtml(s.name) : '<em class="text-slate-400">(deleted)</em>'}</td><td class="p-2 text-xs">${s ? escapeHtml(s.class) : '—'}</td><td class="p-2">${escapeHtml(c.type)}</td><td class="p-2 text-center">${badge}</td><td class="p-2 max-w-md">${escapeHtml(c.description)}</td><td class="p-2 text-xs text-slate-600">${escapeHtml(c.reportedBy)}</td><td class="p-2 text-center whitespace-nowrap">${s ? `<button onclick="smsConduct('${c.id}')" class="text-amber-600 hover:text-amber-800 text-xs font-semibold mr-2" title="Notify guardian via SMS">📲</button>` : ''}<button onclick="deleteConduct('${c.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">×</button></td></tr>`;
+  }).join('');
+}
+
+function renderStatisticalReports() {
+  const levels = ['Pre-Primary','Primary','O Level','A Level','Other'];
+  document.getElementById('levelStats').innerHTML = levels.map(l => {
+    const students = state.students.filter(s => s.level === l);
+    const collected = students.reduce((a,s) => a + s.paid, 0);
+    return `<div class="bg-slate-50 rounded-lg p-3 border-l-4 border-sky-500"><p class="text-xs uppercase font-semibold text-slate-500">${l}</p><p class="text-2xl font-bold text-slate-800 mt-1">${students.length}</p><p class="text-xs text-emerald-600 mt-1">${fmtUGX(collected)} collected</p></div>`;
+  }).join('');
+
+  const classMap = {};
+  state.students.forEach(s => { if (!classMap[s.class]) classMap[s.class] = []; classMap[s.class].push(s); });
+  const classBody = document.getElementById('classStatsBody');
+  const classRows = Object.keys(classMap).sort();
+  if (!classRows.length) {
+    classBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">No data yet.</td></tr>';
+  } else {
+    classBody.innerHTML = classRows.map(klass => {
+      const list = classMap[klass]; const level = list[0].level;
+      const avgScores = list.map(s => studentAcademicSummary(s).avg).filter(v => v > 0);
+      const avg = avgScores.length ? Math.round(avgScores.reduce((a,b)=>a+b,0)/avgScores.length) : 0;
+      const cleared = list.filter(s => s.paid >= effectiveFee(s)).length;
+      const outstanding = list.reduce((a,s) => a + Math.max(0, effectiveFee(s) - s.paid), 0);
+      const athletes = list.filter(s => s.sport).length;
+      return `<tr class="hover:bg-slate-50"><td class="p-2 font-semibold">${escapeHtml(klass)}</td><td class="p-2 text-xs">${escapeHtml(level)}</td><td class="p-2 text-center">${list.length}</td><td class="p-2 text-center">${avg ? avg + '%' : '—'}</td><td class="p-2 text-center text-emerald-700">${cleared}/${list.length}</td><td class="p-2 text-center text-rose-700">${fmtUGX(outstanding)}</td><td class="p-2 text-center text-indigo-700">${athletes}</td></tr>`;
+    }).join('');
+  }
+
+  const sportCounts = {};
+  state.students.forEach(s => { if (s.sport) sportCounts[s.sport] = (sportCounts[s.sport] || 0) + 1; });
+  const sportEntries = Object.entries(sportCounts).sort((a,b) => b[1] - a[1]);
+  const sportMax = Math.max(1, ...sportEntries.map(e => e[1]));
+  document.getElementById('sportStats').innerHTML = sportEntries.length ? sportEntries.map(([sport, n]) => `<div><div class="flex justify-between text-xs mb-1"><span class="font-semibold">${escapeHtml(sport)}</span><span>${n}</span></div><div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width:${(n/sportMax)*100}%"></div></div></div>`).join('') : '<p class="text-sm text-slate-400">No sports data yet.</p>';
+
+  const totalFees = state.students.reduce((a,s) => a + effectiveFee(s), 0);
+  const totalPaid = state.students.reduce((a,s) => a + s.paid, 0);
+  const totalBursary = state.students.reduce((a,s) => a + (s.fee - effectiveFee(s)), 0);
+  const collectionRate = totalFees ? Math.round(totalPaid * 100 / totalFees) : 0;
+  document.getElementById('financeStats').innerHTML = `<div class="flex justify-between"><span>Expected (after bursaries)</span><span class="font-semibold">${fmtUGX(totalFees)}</span></div><div class="flex justify-between"><span>Collected</span><span class="font-semibold text-emerald-700">${fmtUGX(totalPaid)}</span></div><div class="flex justify-between"><span>Outstanding</span><span class="font-semibold text-rose-700">${fmtUGX(totalFees - totalPaid)}</span></div><div class="flex justify-between"><span>Bursary granted</span><span class="font-semibold text-amber-700">${fmtUGX(totalBursary)}</span></div><div class="pt-2 mt-2 border-t border-slate-200 flex justify-between"><span>Collection rate</span><span class="font-bold text-slate-800">${collectionRate}%</span></div>`;
+}
+
+function renderSportFilter() {
+  const sel = document.getElementById('sportFilter'); const cur = sel.value;
+  const sports = Array.from(new Set([...state.programs.map(p => p.sport), ...state.students.map(s => s.sport).filter(Boolean)])).sort();
+  sel.innerHTML = '<option value="">All Sports</option>' + sports.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+function renderSportOptions() {
+  const sel = document.querySelector('#registerForm select[name="sport"]');
+  if (!sel) return;
+  const cur = sel.value;
+  const sports = Array.from(new Set([...SPORT_OPTIONS, ...state.programs.map(p => p.sport)])).sort();
+  sel.innerHTML = '<option value="">— None —</option>' + sports.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+function renderSubjectList() {
+  const dl = document.getElementById('subjectList');
+  const set = new Set([...PRIMARY_SUBJECTS, ...O_LEVEL_SUBJECTS, ...A_LEVEL_SUBJECTS]);
+  dl.innerHTML = Array.from(set).sort().map(s => `<option value="${escapeHtml(s)}">`).join('');
+}
+
+function renderStudentSelects() {
+  const fill = (selId, allowEmpty, label) => {
+    const sel = document.getElementById(selId);
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = `<option value="">${allowEmpty}</option>` + state.students.map(s => `<option value="${s.id}">${escapeHtml(s.name)} — ${escapeHtml(s.class)}${label(s)}</option>`).join('');
+    if (cur) sel.value = cur;
+  };
+  fill('studentSelect',         '-- choose student --', s => ` (Balance: ${fmtUGX(effectiveFee(s) - s.paid)})`);
+  fill('perfStudentSelect',     '-- choose athlete --', s => s.sport ? ' · ' + escapeHtml(s.sport) : '');
+  fill('academicStudentSelect', '-- choose student --', s => ' · ' + escapeHtml(s.level));
+  fill('conductStudentSelect',  '-- choose student --', s => ' · ' + escapeHtml(s.class));
+  updateBalancePreview();
+}
+
+function updateBalancePreview() {
+  const sel = document.getElementById('studentSelect');
+  const preview = document.getElementById('balancePreview');
+  const s = state.students.find(x => x.id === sel.value);
+  if (!s) { preview.classList.add('hidden'); return; }
+  const fee = effectiveFee(s); const balance = fee - s.paid;
+  preview.classList.remove('hidden');
+  preview.innerHTML = `<div><strong>${escapeHtml(s.name)}</strong> (${escapeHtml(s.class)} · ${escapeHtml(s.level)})</div><div>Fees: ${fmtUGX(fee)}${s.bursaryPct > 0 ? ` <span class="text-amber-600">(-${s.bursaryPct}% bursary)</span>` : ''} · Paid: ${fmtUGX(s.paid)} · <span class="${balance <= 0 ? 'text-emerald-700' : 'text-rose-700'} font-semibold">Balance: ${fmtUGX(Math.max(0, balance))}</span></div>`;
+}
+
+function openNotes(studentId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  document.getElementById('modalTitle').textContent = s.name + ' — Performance History';
+  const notes = (s.performanceNotes || []).slice().reverse();
+  const att = studentAttendance(s.id);
+  const header = `<div class="bg-slate-50 rounded-lg p-3 text-sm"><div><strong>Sport:</strong> ${escapeHtml(s.sport || '—')}</div><div class="flex items-center gap-2 mt-1"><strong>Current Level:</strong> ${skillBadge(s.skillLevel)}</div><div class="mt-1"><strong>Attendance:</strong> ${att.rate}% (${att.present}/${att.total})</div><div class="mt-1"><strong>Bursary Score:</strong> ${bursaryScore(s)} / 100 ${bursaryEligible(s) ? '<span class="text-emerald-700 font-semibold">· Eligible</span>' : ''}</div></div>`;
+  const body = notes.length ? notes.map(n => `<div class="border border-slate-200 rounded-lg p-3"><div class="flex items-center justify-between mb-1"><span class="text-xs text-slate-500">${n.date}</span>${skillBadge(n.skillLevel)}</div><p class="text-sm text-slate-700">${escapeHtml(n.note)}</p></div>`).join('') : '<p class="text-sm text-slate-400 text-center py-4">No performance notes recorded yet.</p>';
+  document.getElementById('modalBody').innerHTML = header + body;
+  showModal();
+}
+
+function openAcademic(studentId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  document.getElementById('modalTitle').textContent = s.name + ' — Academic Record';
+  const sum = studentAcademicSummary(s);
+  const rows = (s.academics || []).slice().reverse().map(a => `<tr class="border-b border-slate-100"><td class="p-2">${a.date}</td><td class="p-2">${escapeHtml(a.term)}</td><td class="p-2 font-medium">${escapeHtml(a.subject)}</td><td class="p-2 text-center">${a.score}%</td><td class="p-2 text-center font-semibold text-sky-700">${escapeHtml(a.grade)}</td></tr>`).join('');
+  document.getElementById('modalBody').innerHTML = `<div class="bg-slate-50 rounded-lg p-3 text-sm"><div><strong>Class:</strong> ${escapeHtml(s.class)} · ${escapeHtml(s.level)}${s.combination ? ' (' + escapeHtml(s.combination) + ')' : ''}</div><div><strong>Subjects:</strong> ${sum.count} · <strong>Avg:</strong> ${sum.avg}% · <strong>Result:</strong> ${sum.summary}</div></div>${rows ? `<table class="w-full text-sm mt-3"><thead class="bg-slate-100 text-slate-600 uppercase text-xs"><tr><th class="text-left p-2">Date</th><th class="text-left p-2">Term</th><th class="text-left p-2">Subject</th><th class="text-center p-2">Score</th><th class="text-center p-2">Grade</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="text-sm text-slate-400 text-center py-4">No scores recorded yet.</p>'}`;
+  showModal();
+}
+
+function showModal() {
+  const modal = document.getElementById('studentModal');
+  modal.classList.remove('hidden'); modal.classList.add('flex');
+}
+function closeModal() {
+  const modal = document.getElementById('studentModal');
+  modal.classList.add('hidden'); modal.classList.remove('flex');
+}
+
+function openReportCard(studentId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  const sum = studentAcademicSummary(s); const att = studentAttendance(s.id);
+  const fee = effectiveFee(s); const bal = Math.max(0, fee - s.paid);
+  const notes = (s.performanceNotes || []).slice(-3).reverse();
+  const academicRows = (s.academics || []).map(a => `<tr><td style="border:1px solid #cbd5e1;padding:4px">${escapeHtml(a.term)}</td><td style="border:1px solid #cbd5e1;padding:4px">${escapeHtml(a.subject)}</td><td style="border:1px solid #cbd5e1;padding:4px;text-align:center">${a.score}%</td><td style="border:1px solid #cbd5e1;padding:4px;text-align:center;font-weight:bold">${escapeHtml(a.grade)}</td></tr>`).join('') || '<tr><td colspan="4" style="border:1px solid #cbd5e1;padding:8px;text-align:center;color:#94a3b8">No academic scores yet</td></tr>';
+  const noteRows = notes.length ? notes.map(n => `<div style="border-left:2px solid #818cf8;padding-left:6px;margin:4px 0"><div style="font-size:11px;color:#64748b">${n.date} · ${escapeHtml(n.skillLevel)}</div><div style="font-size:13px">${escapeHtml(n.note)}</div></div>`).join('') : '<p style="font-size:12px;color:#94a3b8">No coaching evaluations yet</p>';
+  const paymentRows = state.payments.filter(p => p.studentId === s.id).slice(-5).map(p => `<tr><td style="border:1px solid #cbd5e1;padding:3px">${p.date}</td><td style="border:1px solid #cbd5e1;padding:3px;text-align:right">${fmtUGX(p.amount)}</td></tr>`).join('') || '<tr><td colspan="2" style="border:1px solid #cbd5e1;padding:8px;text-align:center;color:#94a3b8">No payments yet</td></tr>';
+  const conductItems = state.conduct.filter(c => c.studentId === s.id).slice(-5).reverse();
+  const conductHtml = conductItems.length ? '<ul style="font-size:12px;margin:2px 0 0 0;padding-left:18px">' + conductItems.map(c => `<li><strong>${escapeHtml(c.date)} · ${escapeHtml(c.type)} (${escapeHtml(c.severity)}):</strong> ${escapeHtml(c.description)} <em>— ${escapeHtml(c.reportedBy)}</em></li>`).join('') + '</ul>' : '<p style="font-size:12px;color:#94a3b8;margin:2px 0">No conduct entries recorded.</p>';
+  document.getElementById('printArea').innerHTML = `<div style="background:#fff"><div style="text-align:center;border-bottom:3px double #1e293b;padding-bottom:8px;margin-bottom:12px"><h1 style="font-size:22px;font-weight:bold;color:#1e293b">KAMPALA SCHOOL & ACADEMY</h1><p style="font-size:11px;color:#64748b">P.O. Box · Kampala, Uganda · Termly Student Report Card</p></div><table style="width:100%;font-size:12px;margin-bottom:12px"><tr><td style="padding:2px 6px"><strong>Student:</strong> ${escapeHtml(s.name)}</td><td style="padding:2px 6px"><strong>ID:</strong> ${s.id}</td></tr><tr><td style="padding:2px 6px"><strong>Class:</strong> ${escapeHtml(s.class)} ${s.combination ? '(' + escapeHtml(s.combination) + ')' : ''}</td><td style="padding:2px 6px"><strong>Level:</strong> ${escapeHtml(s.level)}</td></tr><tr><td style="padding:2px 6px"><strong>Guardian:</strong> ${escapeHtml(s.guardian)}</td><td style="padding:2px 6px"><strong>Date:</strong> ${todayISO()}</td></tr></table><h2 style="font-size:14px;font-weight:bold;background:#1e293b;color:#fff;padding:4px 8px;margin:8px 0 4px">ACADEMIC PERFORMANCE</h2><table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px"><thead style="background:#f1f5f9"><tr><th style="border:1px solid #cbd5e1;padding:4px;text-align:left">Term</th><th style="border:1px solid #cbd5e1;padding:4px;text-align:left">Subject</th><th style="border:1px solid #cbd5e1;padding:4px">Score</th><th style="border:1px solid #cbd5e1;padding:4px">Grade</th></tr></thead><tbody>${academicRows}</tbody></table><p style="font-size:12px;margin:4px 0"><strong>Subjects:</strong> ${sum.count} · <strong>Average:</strong> ${sum.avg}% · <strong>Result:</strong> ${sum.summary}</p><h2 style="font-size:14px;font-weight:bold;background:#1e293b;color:#fff;padding:4px 8px;margin:12px 0 4px">SPORTS & CO-CURRICULAR</h2><p style="font-size:12px;margin:2px 0"><strong>Sport:</strong> ${escapeHtml(s.sport || '—')} · <strong>Skill:</strong> ${escapeHtml(s.skillLevel || '—')}</p><p style="font-size:12px;margin:2px 0"><strong>Attendance:</strong> ${att.rate}% (${att.present}/${att.total} sessions)</p><p style="font-size:12px;margin:2px 0"><strong>Bursary Score:</strong> ${bursaryScore(s)} / 100${bursaryEligible(s) ? ' — ELIGIBLE' : ''}${s.bursaryPct > 0 ? ` · Awarded ${s.bursaryPct}%` : ''}</p><div style="margin-top:6px;font-size:12px">${noteRows}</div><h2 style="font-size:14px;font-weight:bold;background:#1e293b;color:#fff;padding:4px 8px;margin:12px 0 4px">DISCIPLINE & CONDUCT</h2>${conductHtml}<h2 style="font-size:14px;font-weight:bold;background:#1e293b;color:#fff;padding:4px 8px;margin:12px 0 4px">FEES STATEMENT</h2><table style="width:100%;font-size:12px;margin-bottom:6px"><tr><td><strong>Termly Tuition:</strong></td><td>${fmtUGX(s.fee)}</td><td><strong>After Bursary:</strong></td><td>${fmtUGX(fee)}</td></tr><tr><td><strong>Paid:</strong></td><td style="color:#047857">${fmtUGX(s.paid)}</td><td><strong>Balance:</strong></td><td style="color:#b91c1c"><strong>${fmtUGX(bal)}</strong></td></tr></table><table style="width:100%;border-collapse:collapse;font-size:11px"><thead style="background:#f1f5f9"><tr><th style="border:1px solid #cbd5e1;padding:3px;text-align:left">Date</th><th style="border:1px solid #cbd5e1;padding:3px;text-align:right">Amount</th></tr></thead><tbody>${paymentRows}</tbody></table><div style="margin-top:24px;display:flex;justify-content:space-between;font-size:11px"><div>______________________________<br/>Class Teacher</div><div>______________________________<br/>Head Coach</div><div>______________________________<br/>Head Teacher</div></div><p style="text-align:center;font-size:10px;color:#94a3b8;margin-top:16px">Generated ${new Date().toLocaleString()} · Kampala School Portal</p></div>`;
+  document.getElementById('printArea').classList.remove('hidden');
+  window.print();
+  document.getElementById('printArea').classList.add('hidden');
+}
+
+function renderAll() {
+  updateDashboardMetrics(); renderStudentTable(); renderPaymentsTable();
+  renderPrograms(); renderSportFilter(); renderSportOptions();
+  renderPerformanceTable(); renderAcademicTable(); renderSubjectList();
+  renderAttendanceProgramSelect(); renderAttendanceRoster(); renderAttendanceTable();
+  renderBursaryTable(); renderConductTable(); renderStatisticalReports();
+  renderStudentSelects();
+}
+
+function setupTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('tab-active'); b.classList.add('tab-inactive'); });
+      btn.classList.remove('tab-inactive'); btn.classList.add('tab-active');
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + tab).classList.add('active');
+    });
+  });
+}
+
+function bindEvents() {
+  document.getElementById('registerForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    registerStudent({ admissionNo: fd.get('admissionNo'), name: fd.get('name'), class: fd.get('class'), combination: fd.get('combination'), guardian: fd.get('guardian'), fee: fd.get('fee'), sport: fd.get('sport'), skillLevel: fd.get('skillLevel') });
+    e.target.reset();
+  });
+
+  document.getElementById('paymentForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    recordPayment(fd.get('studentId'), fd.get('amount'));
+    e.target.reset();
+    document.getElementById('balancePreview').classList.add('hidden');
+  });
+
+  document.getElementById('programForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    addProgram({ name: fd.get('name'), sport: fd.get('sport'), coach: fd.get('coach'), days: fd.getAll('days'), requirements: fd.get('requirements') });
+    e.target.reset();
+  });
+
+  document.getElementById('performanceForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    logPerformance(fd.get('studentId'), fd.get('skillLevel'), fd.get('note'));
+    e.target.reset();
+  });
+
+  document.getElementById('academicForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    addAcademicScore({ studentId: fd.get('studentId'), term: fd.get('term'), subject: fd.get('subject'), score: fd.get('score') });
+    e.target.reset();
+  });
+
+  document.getElementById('conductForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    addConduct({ studentId: fd.get('studentId'), type: fd.get('type'), severity: fd.get('severity'), reportedBy: fd.get('reportedBy'), description: fd.get('description'), notifyGuardian: fd.get('notifyGuardian') === 'on' });
+    e.target.reset();
+  });
+
+  document.getElementById('conductFilter').addEventListener('change', renderConductTable);
+  document.getElementById('bulkSmsBtn').addEventListener('click', openBulkSms);
+  document.getElementById('attendanceProgram').addEventListener('change', renderAttendanceRoster);
+  document.getElementById('attendanceDate').addEventListener('change', renderAttendanceRoster);
+  document.getElementById('saveAttendanceBtn').addEventListener('click', () => {
+    const programId = document.getElementById('attendanceProgram').value;
+    const date = document.getElementById('attendanceDate').value || todayISO();
+    if (!programId) return toast('Choose a program first', 'error');
+    const checkboxes = document.querySelectorAll('#attendanceRoster .att-toggle');
+    if (!checkboxes.length) return toast('No athletes to mark', 'error');
+    const records = Array.from(checkboxes).map(cb => ({ studentId: cb.dataset.student, present: cb.checked }));
+    saveAttendance(programId, date, records);
+  });
+
+  document.getElementById('studentSelect').addEventListener('change', updateBalancePreview);
+  document.getElementById('searchInput').addEventListener('input', renderStudentTable);
+  document.getElementById('levelFilter').addEventListener('change', renderStudentTable);
+  document.getElementById('sportFilter').addEventListener('change', renderPerformanceTable);
+  document.getElementById('academicLevelFilter').addEventListener('change', renderAcademicTable);
+  document.getElementById('exportBtn').addEventListener('click', exportLedger);
+  document.getElementById('importInput').addEventListener('change', e => {
+    if (e.target.files[0]) importLedger(e.target.files[0]);
+    e.target.value = '';
+  });
+  document.getElementById('resetBtn').addEventListener('click', resetAll);
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('studentModal').addEventListener('click', e => { if (e.target.id === 'studentModal') closeModal(); });
+
+  document.getElementById('attendanceDate').value = todayISO();
+
+  const classSelect = document.getElementById('classSelect');
+  const hint = document.getElementById('combinationHint');
+  const combo = document.getElementById('combinationInput');
+  if (classSelect && hint && combo) {
+    classSelect.addEventListener('change', () => {
+      const lvl = classifyLevel(classSelect.value);
+      if (lvl === 'Primary') { hint.textContent = 'Primary: list all taught subjects (e.g. Math, English, Science, SST, Religious Education).'; combo.placeholder = 'e.g. Math, English, Science, SST, Religious Education'; }
+      else if (lvl === 'O Level') { hint.textContent = 'O Level: enter 8–10 subjects (UCE typically aggregates the best 8).'; combo.placeholder = 'e.g. Math, English, Physics, Chemistry, Biology, Geography, History, CRE'; }
+      else if (lvl === 'A Level') { hint.textContent = 'A Level: enter combination code (e.g. PCM) or full subjects + Sub-Math/General Paper.'; combo.placeholder = 'e.g. PCM  or  Math, Physics, Chemistry, Sub-Math, General Paper'; }
+      else { hint.textContent = 'Comma-separated list of subjects taught.'; combo.placeholder = 'e.g. subjects taught'; }
+    });
+  }
+}
+
+loadState();
+setupTabs();
+bindEvents();
+renderAll();
+</script>
+</body>
+</html>         
